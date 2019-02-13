@@ -1,0 +1,60 @@
+node('quarknet45') {
+     def nuget          = "c:\\nuget\\nuget.exe"
+     def configFile     = "${WORKSPACE}\\Nuget.config"
+     def giturl         = "https://steps.everis.com/git/INNOVASEV/Polar.git"
+     def solutionName   = "./src/ApiRest/Everis.Polar.ApiRest.csproj"
+     def credentialsId  = "gitjenkins"
+     def SONAR_URL      = "https://steps.everis.com/sonarqube6ce"
+     def SONAR_TOKEN    = "402bf587a948779851e60203139a518f8a01b0c9"     
+     def SONAR_PROJ_KEY ="POLAR"
+     def SONAR_PROJ_NAME="POLAR-polar"
+     def SONAR_PROJ_VER ="1.0.1"
+     def sonarqubeScannerHome  = tool name: 'Sonar Scanner Community', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+     // def reportGenerator = tool name: 'dotnet-reportgenerator-globaltool'
+
+    withEnv(["JAVA_HOME=C:\\Program Files\\Java\\jdk1.8.0_112"]) {
+
+        stage ('Checkout')
+        {
+            cleanWs()
+        }
+
+        stage('Preparation') {        
+            // bat "dotnet tool install -g dotnet-reportgenerator-globaltool"
+       
+            git branch: 'develop', credentialsId: "${credentialsId}", url: "${giturl}"        
+            // bat "dotnet tool install --global dotnet-sonarscanner"
+        }
+        stage('Testing') {
+            // Option 1            
+            // bat "dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --verbosity=normal --results-directory \"${WORKSPACE}\\TestResults\" --logger trx;LogFileName=test_results.trx ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj"
+
+            // bat "dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj"         
+            
+            // Option 2
+            // bat 'dotnet add ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj  package coverlet.msbuild'
+            // bat 'dotnet test /p:CollectCoverage=true ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj'        
+            // bat 'dotnet remove ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj package coverlet.msbuild'
+        }
+
+        stage ('Building With Sonar')
+        {
+            withSonarQubeEnv('SonarQube 6 Community') {
+                bat "dotnet build-server shutdown"
+                // bat "dotnet sonarscanner begin /key:${SONAR_PROJ_KEY} /name:${SONAR_PROJ_NAME} /version:${SONAR_PROJ_VER} /d:sonar.host.url=${SONAR_URL} /d:sonar.login=${SONAR_TOKEN} /d:sonar.verbose=true /d:sonar.cs.opencover.reportsPaths=\"${WORKSPACE}\\TestResults\\coverage.opencover.xml\" /d:sonar.test.inclusions=**\\test\\** /d:sonar.coverage.exclusions=**\\TestResults\\**,**\\test\\**,**\\obj\\**,**\\bin\\**,**wwwroot\\lib\\**"
+                bat "dotnet sonarscanner begin /key:${SONAR_PROJ_KEY} /name:${SONAR_PROJ_NAME} /version:${SONAR_PROJ_VER} /d:sonar.host.url=${SONAR_URL} /d:sonar.login=${SONAR_TOKEN} /d:sonar.cs.opencover.reportsPaths=./test/Everis.Polar.ApiRest.Tests/coverage.opencover.xml /d:sonar.exclusions=**wwwroot/lib/**,**/test/**"                     
+                bat "dotnet build ${solutionName}"
+                bat "dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura ./test/Everis.Polar.ApiRest.Tests/Everis.Polar.ApiRest.Tests.csproj"           
+                bat "dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}"
+            }
+        }
+
+        // stage('Publishing'){
+        //    bat "dotnet publish .\\src\\ApiRest\\Everis.Polar.ApiRest.csproj -o ${WORKSPACE}\\publish\\ApiRest\\"
+        //    // bat "dotnet publish .\\src\\Mvc\\Everis.Polar.Mvc.csproj         -o ${WORKSPACE}\\publish\\Mvc\\"        
+        //}
+        //stage ('Cleaning'){
+           // bat "dotnet tool uninstall dotnet-sonarscanner --global"
+        //}
+    }
+}

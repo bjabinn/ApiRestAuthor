@@ -1,0 +1,48 @@
+﻿@*
+    --------------------------------------------------------
+        <copyright company="Everis Centers S.L.U">
+            Copyright (c) Sevilla HPC. All rights reserved.
+        </copyright>
+    --------------------------------------------------------
+*@
+
+@{
+    ViewData["Title"] = "Polar";
+}
+
+@model IEnumerable<Book>
+
+<h2>Books</h2>
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th>Tile</th>
+            <th>Language</th>
+            <th>Num. of Pages</th>
+            <th>Format</th>
+            <th>Isbn</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Language</td>
+                <td>@book.NumPages</td>
+                <td>@book.Format</td>
+                @if (ViewBag.ShowActions)
+                {
+                    <td>
+                        <a asp-action="Details" asp-route-id="@book.BookId">Details</a> |
+                        <a asp-action="Edit" asp-route-id="@book.BookId">Edit</a> |
+                        <a asp-action="Delete" asp-route-id="@book.BookId">Delete</a>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create">Create a new book...</a>

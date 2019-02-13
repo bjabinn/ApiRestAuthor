@@ -1,0 +1,17 @@
+﻿// ------------------------------------------------------
+// <copyright company="Everis Centers S.L.U">
+//     Copyright (c) Sevilla HPC. All rights reserved.
+// </copyright>
+// ------------------------------------------------------
+
+namespace Everis.Polar.ApiRest.Models
+{
+    public class Author
+    {
+        public int AuthorId { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Gender { get; set; }
+        public bool IsDeleted { get; set; }
+    }
+}

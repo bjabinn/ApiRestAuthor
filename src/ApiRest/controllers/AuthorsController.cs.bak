@@ -1,0 +1,54 @@
+﻿// ------------------------------------------------------
+// <copyright company="Everis Centers S.L.U">
+//     Copyright (c) Sevilla HPC. All rights reserved.
+// </copyright>
+// ------------------------------------------------------
+
+using Everis.Polar.ApiRest.Models;
+using Everis.Polar.ApiRest.Repository;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+
+namespace ApiRest.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthorsController : ControllerBase
+    {
+
+        private AuthorRepository _repository;
+
+        public AuthorsController()
+        {
+            _repository = new AuthorRepository();
+        }
+
+        [HttpGet]
+        public IEnumerable<Author> Get()
+        {
+            var authors = _repository.GetAuthors();
+            return authors;
+        }
+
+        [HttpGet("{id}")]
+        public Author Get(int id)
+        {
+            return _repository.Get(id);
+        }
+
+        [HttpPost]
+        public void Post([FromBody] string value)
+        {
+        }
+
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
+        {
+        }
+
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+        }
+    }
+}

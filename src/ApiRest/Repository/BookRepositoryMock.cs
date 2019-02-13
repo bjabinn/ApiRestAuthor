@@ -1,0 +1,68 @@
+﻿// ------------------------------------------------------
+// <copyright company="Everis Centers S.L.U">
+//     Copyright (c) Sevilla HPC. All rights reserved.
+// </copyright>
+// ------------------------------------------------------
+
+using Everis.Polar.ApiRest.Models;
+using Everis.Polar.ApiRest.Repository;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Everis.Polar.ApiRest.Repository
+{
+    public class BookRepositoryMock : IBookRepository
+    {
+        private readonly IList<Book> _books;
+
+        public BookRepositoryMock()
+        {
+            _books =new List<Book>()
+            {
+                new Book() { BookId = 1, Title = "Harry Potter", NumPages= 350, Language=1, Isbn=1012, Format=1, IsDeleted= false},
+                new Book() { BookId = 2, Title = "Juego de Tronos", NumPages= 560, Language=2, Isbn=0512, Format=2, IsDeleted= false},
+                new Book() { BookId = 3, Title = "Don Quijote", NumPages= 836, Language=1, Isbn=0018, Format=2, IsDeleted= true},
+                new Book() { BookId = 4, Title = "El diario de Ana Frank", NumPages= 463, Language=3, Isbn=4520, Format=2, IsDeleted= true}
+            };
+        }
+
+        public IEnumerable<Book> Get()
+        {
+            return _books;
+        }
+
+
+        public Book Get(int id)
+        {
+            var query = _books.Where(b => b.BookId == id);
+            var book = query.FirstOrDefault();
+           
+            return book ?? new Book();
+        }
+
+        public Book Save(Book book)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Book Create(Book book)
+        {
+            throw new System.NotImplementedException();
+        }
+        public bool Delete(int id)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        IEnumerable<Book> IBookRepository.Get()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        Book IBookRepository.Get(int id)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+

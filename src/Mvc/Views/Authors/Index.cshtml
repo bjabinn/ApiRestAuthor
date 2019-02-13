@@ -1,0 +1,17 @@
+﻿@*
+    --------------------------------------------------------
+        <copyright company="Everis Centers S.L.U">
+            Copyright (c) Sevilla HPC. All rights reserved.
+        </copyright>
+    --------------------------------------------------------
+*@
+
+@{
+    ViewData["Title"] = "Polar";
+}
+
+@model IEnumerable<Author>
+
+<h2>Authors</h2>
+<partial name="~/Views/Shared/_AuthorsListPartial.cshtml" />
+<a asp-action="Create">Create a new book...</a>

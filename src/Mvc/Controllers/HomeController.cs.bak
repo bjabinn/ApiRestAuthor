@@ -1,0 +1,145 @@
+﻿// ------------------------------------------------------
+// <copyright company="Everis Centers S.L.U">
+//     Copyright (c) Sevilla HPC. All rights reserved.
+// </copyright>
+// ------------------------------------------------------
+
+using Everis.Polar.Mvc.Infrastructure;
+using Everis.Polar.Mvc.Settings;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Everis.Polar.Mvc.ViewModels;
+using Everis.Polar.Mvc.Models;
+
+namespace Everis.Polar.Mvc.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly IHttpClient _httpClient;
+        private readonly IOptions<AppSettings> _settings;
+        private string _serviceUrl;
+
+
+        public HomeController(IOptions<AppSettings> settings, IHttpClient httpClient)
+        {
+            _settings = settings;
+            _httpClient = httpClient;
+
+            _serviceUrl = $"{_settings.Value.Services.BaseUrl}/books";
+        }
+
+
+        // TODO: Uncomment to use Caching !!!
+        // [ResponseCache(Duration =15, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public async Task<IActionResult> Index()
+        {
+            var response = await _httpClient.GetStringAsync(_serviceUrl);
+            var books = JsonConvert.DeserializeObject<IEnumerable<Book>>(response);
+
+            var vm = new List<BookViewModel>();
+            foreach (var b in books)
+            {
+                vm.Add(MapToViewModel(b));
+            }
+            return View(vm);
+
+            // Using MVC without API as a Mock
+            // return View(new[] { "Value 1", "Value 2"});
+        }
+
+        private static BookViewModel MapToViewModel(Book b)
+        {
+            return new BookViewModel()
+            {
+                BookId = b.BookId,
+                Format = b.Format,
+                Isbn = b.Isbn,
+                IsDeleted = b.IsDeleted,
+                Language = b.Language,
+                NumPages = b.NumPages,
+                Title = b.Title
+            };
+        }
+
+        private async Task<Book> GetBook(int id)
+        {
+            var response = await _httpClient.GetStringAsync($"{_serviceUrl}/{id}");
+            var book = JsonConvert.DeserializeObject<Book>(response);
+            return book;
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            Book book = await GetBook(id);
+            return View(MapToViewModel(book));
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            Book book = await GetBook(id);
+            return View(MapToViewModel(book));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind(nameof(Book.BookId), "Title", "NumPages", "Language", "Isbn", "IsDeleted")] Book book)
+        {
+            var response = await _httpClient.PutAsync($"{_serviceUrl}/{id}", book);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        public async Task<IActionResult> Create()
+        {
+            Book book = new Book() { };
+            await Task.CompletedTask;
+            return View(MapToViewModel(book));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(int id, [Bind(nameof(Book.BookId), nameof(Book.Title), nameof(Book.NumPages), nameof(Book.Language), nameof(Book.Isbn), nameof(Book.IsDeleted))] Book book)
+        {
+            var response = await _httpClient.PostAsync($"{_serviceUrl}/{id}", book);
+            return RedirectToAction(nameof(Index));
+        }
+
+        //[HttpPost]        
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _httpClient.DeleteAsync($"{_serviceUrl}/{id}");
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        public IActionResult About()
+        {
+            ViewData["Message"] = "Your application description page.";
+
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            ViewData["Message"] = "Your contact page.";
+
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+}
